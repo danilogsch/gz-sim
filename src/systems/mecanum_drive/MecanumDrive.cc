@@ -17,7 +17,7 @@
 
 #include "MecanumDrive.hh"
 
-#include <ignition/msgs/odometry.pb.h>
+#include <gz/msgs/odometry.pb.h>
 
 #include <limits>
 #include <mutex>
@@ -25,22 +25,22 @@
 #include <string>
 #include <vector>
 
-#include <ignition/common/Profiler.hh>
-#include <ignition/math/DiffDriveOdometry.hh>
-#include <ignition/math/Quaternion.hh>
-#include <ignition/math/SpeedLimiter.hh>
-#include <ignition/plugin/Register.hh>
-#include <ignition/transport/Node.hh>
+#include <gz/common/Profiler.hh>
+#include <gz/math/MecanumDriveOdometry.hh>
+#include <gz/math/Quaternion.hh>
+#include <gz/math/SpeedLimiter.hh>
+#include <gz/plugin/Register.hh>
+#include <gz/transport/Node.hh>
 
-#include "ignition/gazebo/components/CanonicalLink.hh"
-#include "ignition/gazebo/components/JointPosition.hh"
-#include "ignition/gazebo/components/JointVelocityCmd.hh"
-#include "ignition/gazebo/Link.hh"
-#include "ignition/gazebo/Model.hh"
-#include "ignition/gazebo/Util.hh"
+#include "gz/sim/components/CanonicalLink.hh"
+#include "gz/sim/components/JointPosition.hh"
+#include "gz/sim/components/JointVelocityCmd.hh"
+#include "gz/sim/Link.hh"
+#include "gz/sim/Model.hh"
+#include "gz/sim/Util.hh"
 
-using namespace ignition;
-using namespace gazebo;
+using namespace gz;
+using namespace sim;
 using namespace systems;
 
 /// \brief Velocity command.
@@ -58,20 +58,27 @@ struct Commands
   Commands() : lin(0.0), lat(0.0), ang(0.0) {}
 };
 
-class ignition::gazebo::systems::MecanumDrivePrivate
+class gz::sim::systems::MecanumDrivePrivate
 {
   /// \brief Callback for velocity subscription
   /// \param[in] _msg Velocity message
-  public: void OnCmdVel(const ignition::msgs::Twist &_msg);
+  public: void OnCmdVel(const gz::msgs::Twist &_msg);
+  
+  /// \brief Update odometry and publish an odometry message.
+  /// \param[in] _info System update information.
+  /// \param[in] _ecm The EntityComponentManager of the given simulation
+  /// instance.
+  public: void UpdateOdometry(const gz::sim::UpdateInfo &_info,
+    const gz::sim::EntityComponentManager &_ecm);
 
   /// \brief Update the linear and angular velocities.
   /// \param[in] _info System update information.
   /// \param[in] _ecm The EntityComponentManager of the given simulation
   /// instance.
-  public: void UpdateVelocity(const ignition::gazebo::UpdateInfo &_info,
-    const ignition::gazebo::EntityComponentManager &_ecm);
+  public: void UpdateVelocity(const gz::sim::UpdateInfo &_info,
+    const gz::sim::EntityComponentManager &_ecm);
 
-  /// \brief Ignition communication node.
+  /// \brief Gazebo communication node.
   public: transport::Node node;
 
   /// \brief Entity of the front left joint
@@ -131,8 +138,8 @@ class ignition::gazebo::systems::MecanumDrivePrivate
   /// \brief Last sim time odom was published.
   public: std::chrono::steady_clock::duration lastOdomPubTime{0};
 
-  /// \brief Diff drive odometry.
-  public: math::DiffDriveOdometry odom;
+  /// \brief Mecanum drive odometry.
+  public: math::MecanumDriveOdometry odom;
 
   /// \brief Diff drive odometry message publisher.
   public: transport::Node::Publisher odomPub;
@@ -141,10 +148,10 @@ class ignition::gazebo::systems::MecanumDrivePrivate
   public: transport::Node::Publisher tfPub;
 
   /// \brief Linear velocity limiter.
-  public: std::unique_ptr<ignition::math::SpeedLimiter> limiterLin;
+  public: std::unique_ptr<gz::math::SpeedLimiter> limiterLin;
 
   /// \brief Angular velocity limiter.
-  public: std::unique_ptr<ignition::math::SpeedLimiter> limiterAng;
+  public: std::unique_ptr<gz::math::SpeedLimiter> limiterAng;
 
   /// \brief Previous control command.
   public: Commands last0Cmd;
@@ -187,7 +194,7 @@ void MecanumDrive::Configure(const Entity &_entity,
 
   if (!this->dataPtr->model.Valid(_ecm))
   {
-    ignerr << "MecanumDrive plugin should be attached to a model entity. "
+    gzerr << "MecanumDrive plugin should be attached to a model entity. "
            << "Failed to initialize." << std::endl;
     return;
   }
@@ -231,8 +238,8 @@ void MecanumDrive::Configure(const Entity &_entity,
       this->dataPtr->wheelRadius).first;
 
   // Instantiate the speed limiters.
-  this->dataPtr->limiterLin = std::make_unique<ignition::math::SpeedLimiter>();
-  this->dataPtr->limiterAng = std::make_unique<ignition::math::SpeedLimiter>();
+  this->dataPtr->limiterLin = std::make_unique<gz::math::SpeedLimiter>();
+  this->dataPtr->limiterAng = std::make_unique<gz::math::SpeedLimiter>();
 
   // Parse speed limiter parameters.
   if (_sdf->HasElement("min_velocity"))
@@ -281,8 +288,10 @@ void MecanumDrive::Configure(const Entity &_entity,
   }
 
   // Setup odometry.
-  this->dataPtr->odom.SetWheelParams(this->dataPtr->wheelSeparation,
-      this->dataPtr->wheelRadius, this->dataPtr->wheelRadius);
+  this->dataPtr->odom.SetWheelParams(this->dataPtr->wheelSeparation, 
+      this->dataPtr->wheelbase,  
+      this->dataPtr->wheelRadius, 
+      this->dataPtr->wheelRadius);
 
   // Subscribe to commands
   std::vector<std::string> topics;
@@ -321,20 +330,20 @@ void MecanumDrive::Configure(const Entity &_entity,
   if (_sdf->HasElement("child_frame_id"))
     this->dataPtr->sdfChildFrameId = _sdf->Get<std::string>("child_frame_id");
 
-  ignmsg << "MecanumDrive subscribing to twist messages on [" << topic << "]"
+  gzmsg << "MecanumDrive subscribing to twist messages on [" << topic << "]"
          << std::endl;
 }
 
 //////////////////////////////////////////////////
-void MecanumDrive::PreUpdate(const ignition::gazebo::UpdateInfo &_info,
-    ignition::gazebo::EntityComponentManager &_ecm)
+void MecanumDrive::PreUpdate(const gz::sim::UpdateInfo &_info,
+    gz::sim::EntityComponentManager &_ecm)
 {
-  IGN_PROFILE("MecanumDrive::PreUpdate");
+  GZ_PROFILE("MecanumDrive::PreUpdate");
 
   // \TODO(anyone) Support rewind
   if (_info.dt < std::chrono::steady_clock::duration::zero())
   {
-    ignwarn << "Detected jump back in time ["
+    gzwarn << "Detected jump back in time ["
         << std::chrono::duration_cast<std::chrono::seconds>(_info.dt).count()
         << "s]. System may not work properly." << std::endl;
   }
@@ -355,7 +364,7 @@ void MecanumDrive::PreUpdate(const ignition::gazebo::UpdateInfo &_info,
         this->dataPtr->frontLeftJoints.push_back(joint);
       else if (warnedModels.find(modelName) == warnedModels.end())
       {
-        ignwarn << "Failed to find left joint [" << name << "] for model ["
+        gzwarn << "Failed to find left joint [" << name << "] for model ["
                 << modelName << "]" << std::endl;
         warned = true;
       }
@@ -368,7 +377,7 @@ void MecanumDrive::PreUpdate(const ignition::gazebo::UpdateInfo &_info,
         this->dataPtr->frontRightJoints.push_back(joint);
       else if (warnedModels.find(modelName) == warnedModels.end())
       {
-        ignwarn << "Failed to find right joint [" << name << "] for model ["
+        gzwarn << "Failed to find right joint [" << name << "] for model ["
                 << modelName << "]" << std::endl;
         warned = true;
       }
@@ -381,7 +390,7 @@ void MecanumDrive::PreUpdate(const ignition::gazebo::UpdateInfo &_info,
         this->dataPtr->backLeftJoints.push_back(joint);
       else if (warnedModels.find(modelName) == warnedModels.end())
       {
-        ignwarn << "Failed to find left joint [" << name << "] for model ["
+        gzwarn << "Failed to find left joint [" << name << "] for model ["
                 << modelName << "]" << std::endl;
         warned = true;
       }
@@ -394,7 +403,7 @@ void MecanumDrive::PreUpdate(const ignition::gazebo::UpdateInfo &_info,
         this->dataPtr->backRightJoints.push_back(joint);
       else if (warnedModels.find(modelName) == warnedModels.end())
       {
-        ignwarn << "Failed to find right joint [" << name << "] for model ["
+        gzwarn << "Failed to find right joint [" << name << "] for model ["
                 << modelName << "]" << std::endl;
         warned = true;
       }
@@ -416,7 +425,7 @@ void MecanumDrive::PreUpdate(const ignition::gazebo::UpdateInfo &_info,
 
   if (warnedModels.find(modelName) != warnedModels.end())
   {
-    ignmsg << "Found joints for model [" << modelName
+    gzmsg << "Found joints for model [" << modelName
            << "], plugin will start working." << std::endl;
     warnedModels.erase(modelName);
   }
@@ -427,6 +436,10 @@ void MecanumDrive::PreUpdate(const ignition::gazebo::UpdateInfo &_info,
 
   for (Entity joint : this->dataPtr->frontLeftJoints)
   {
+    // skip this entity if it has been removed
+    if (!_ecm.HasEntity(joint))
+      continue;
+
     // Update wheel velocity
     auto vel = _ecm.Component<components::JointVelocityCmd>(joint);
 
@@ -443,6 +456,10 @@ void MecanumDrive::PreUpdate(const ignition::gazebo::UpdateInfo &_info,
 
   for (Entity joint : this->dataPtr->frontRightJoints)
   {
+    // skip this entity if it has been removed
+    if (!_ecm.HasEntity(joint))
+      continue;
+
     // Update wheel velocity
     auto vel = _ecm.Component<components::JointVelocityCmd>(joint);
 
@@ -460,6 +477,10 @@ void MecanumDrive::PreUpdate(const ignition::gazebo::UpdateInfo &_info,
 
   for (Entity joint : this->dataPtr->backLeftJoints)
   {
+    // skip this entity if it has been removed
+    if (!_ecm.HasEntity(joint))
+      continue;
+
     // Update wheel velocity
     auto vel = _ecm.Component<components::JointVelocityCmd>(joint);
 
@@ -476,6 +497,10 @@ void MecanumDrive::PreUpdate(const ignition::gazebo::UpdateInfo &_info,
 
   for (Entity joint : this->dataPtr->backRightJoints)
   {
+    // skip this entity if it has been removed
+    if (!_ecm.HasEntity(joint))
+      continue;
+
     // Update wheel velocity
     auto vel = _ecm.Component<components::JointVelocityCmd>(joint);
 
@@ -489,26 +514,161 @@ void MecanumDrive::PreUpdate(const ignition::gazebo::UpdateInfo &_info,
       *vel = components::JointVelocityCmd({this->dataPtr->backRightJointSpeed});
     }
   }
+
+  // Create the left and right side joint position components if they
+  // don't exist.
+  auto frontLeftPos = _ecm.Component<components::JointPosition>(
+      this->dataPtr->frontLeftJoints[0]);
+  if (!frontLeftPos && _ecm.HasEntity(this->dataPtr->frontLeftJoints[0]))
+  {
+    _ecm.CreateComponent(this->dataPtr->frontLeftJoints[0],
+        components::JointPosition());
+  }
+
+  auto frontRightPos = _ecm.Component<components::JointPosition>(
+      this->dataPtr->frontRightJoints[0]);
+  if (!frontRightPos && _ecm.HasEntity(this->dataPtr->frontRightJoints[0]))
+  {
+    _ecm.CreateComponent(this->dataPtr->frontRightJoints[0],
+        components::JointPosition());
+  }
+
+  auto backLeftPos = _ecm.Component<components::JointPosition>(
+      this->dataPtr->backLeftJoints[0]);
+  if (!backLeftPos && _ecm.HasEntity(this->dataPtr->backLeftJoints[0]))
+  {
+    _ecm.CreateComponent(this->dataPtr->backLeftJoints[0],
+        components::JointPosition());
+  }
+
+  auto backRightPos = _ecm.Component<components::JointPosition>(
+      this->dataPtr->backRightJoints[0]);
+  if (!backRightPos && _ecm.HasEntity(this->dataPtr->backRightJoints[0]))
+  {
+    _ecm.CreateComponent(this->dataPtr->backRightJoints[0],
+        components::JointPosition());
+  }
+
+  
 }
 
 //////////////////////////////////////////////////
 void MecanumDrive::PostUpdate(const UpdateInfo &_info,
     const EntityComponentManager &_ecm)
 {
-  IGN_PROFILE("MecanumDrive::PostUpdate");
+  GZ_PROFILE("MecanumDrive::PostUpdate");
   // Nothing left to do if paused.
   if (_info.paused)
     return;
 
   this->dataPtr->UpdateVelocity(_info, _ecm);
+  this->dataPtr->UpdateOdometry(_info, _ecm);
+}
+
+//////////////////////////////////////////////////
+void MecanumDrivePrivate::UpdateOdometry(const gz::sim::UpdateInfo &_info,
+    const gz::sim::EntityComponentManager &_ecm)
+{
+  GZ_PROFILE("MecanumDrive::UpdateOdometry");
+  // Initialize, if not already initialized.
+  if (!this->odom.Initialized())
+  {
+    this->odom.Init(std::chrono::steady_clock::time_point(_info.simTime));
+    return;
+  }
+
+  if (this->frontLeftJoints.empty() || this->frontRightJoints.empty() || this->backLeftJoints.empty() || this->backRightJoints.empty())
+    return;
+
+  // Get the first joint positions for each wheel joint.
+  auto frontLeftPos = _ecm.Component<components::JointPosition>(this->frontLeftJoints[0]);
+  auto frontRightPos = _ecm.Component<components::JointPosition>(this->frontRightJoints[0]);
+  auto backLeftPos = _ecm.Component<components::JointPosition>(this->backLeftJoints[0]);
+  auto backRightPos = _ecm.Component<components::JointPosition>(this->backRightJoints[0]);
+  
+  // Abort if the joints were not found or just created.
+  if (!frontLeftPos || !frontRightPos || !backLeftPos || !backRightPos ||
+   frontLeftPos->Data().empty() || frontRightPos->Data().empty() || backLeftPos->Data().empty() || backRightPos->Data().empty())
+  {
+    return;
+  }
+
+  this->odom.Update(frontLeftPos->Data()[0], frontRightPos->Data()[0], backLeftPos->Data()[0], backRightPos->Data()[0],
+      std::chrono::steady_clock::time_point(_info.simTime));  
+
+  // Throttle publishing
+  auto diff = _info.simTime - this->lastOdomPubTime;
+  if (diff > std::chrono::steady_clock::duration::zero() &&
+      diff < this->odomPubPeriod)
+  {
+    return;
+  }
+  this->lastOdomPubTime = _info.simTime;
+
+  // Construct the odometry message and publish it.
+  msgs::Odometry msg;
+  msg.mutable_pose()->mutable_position()->set_x(this->odom.X());
+  msg.mutable_pose()->mutable_position()->set_y(this->odom.Y());
+
+  math::Quaterniond orientation(0, 0, *this->odom.Heading());
+  msgs::Set(msg.mutable_pose()->mutable_orientation(), orientation);
+
+  msg.mutable_twist()->mutable_linear()->set_x(this->odom.LinearVelocity());
+  msg.mutable_twist()->mutable_linear()->set_y(this->odom.LateralVelocity());
+  msg.mutable_twist()->mutable_angular()->set_z(*this->odom.AngularVelocity());
+
+  // Set the time stamp in the header
+  msg.mutable_header()->mutable_stamp()->CopyFrom(
+      convert<msgs::Time>(_info.simTime));
+
+  // Set the frame id.
+  auto frame = msg.mutable_header()->add_data();
+  frame->set_key("frame_id");
+  if (this->sdfFrameId.empty())
+  {
+    frame->add_value(this->model.Name(_ecm) + "/odom");
+  }
+  else
+  {
+    frame->add_value(this->sdfFrameId);
+  }
+
+  std::optional<std::string> linkName = this->canonicalLink.Name(_ecm);
+  if (this->sdfChildFrameId.empty())
+  {
+    if (linkName)
+    {
+      auto childFrame = msg.mutable_header()->add_data();
+      childFrame->set_key("child_frame_id");
+      childFrame->add_value(this->model.Name(_ecm) + "/" + *linkName);
+    }
+  }
+  else
+  {
+    auto childFrame = msg.mutable_header()->add_data();
+    childFrame->set_key("child_frame_id");
+    childFrame->add_value(this->sdfChildFrameId);
+  }
+
+  // Construct the Pose_V/tf message and publish it.
+  msgs::Pose_V tfMsg;
+  gz::msgs::Pose *tfMsgPose = tfMsg.add_pose();
+  tfMsgPose->mutable_header()->CopyFrom(*msg.mutable_header());
+  tfMsgPose->mutable_position()->CopyFrom(msg.mutable_pose()->position());
+  tfMsgPose->mutable_orientation()->CopyFrom(msg.mutable_pose()->orientation());
+
+  // Publish the messages
+  this->odomPub.Publish(msg);
+  this->tfPub.Publish(tfMsg);
+
 }
 
 //////////////////////////////////////////////////
 void MecanumDrivePrivate::UpdateVelocity(
-    const ignition::gazebo::UpdateInfo &_info,
-    const ignition::gazebo::EntityComponentManager &/*_ecm*/)
+    const gz::sim::UpdateInfo &_info,
+    const gz::sim::EntityComponentManager &/*_ecm*/)
 {
-  IGN_PROFILE("MecanumDrive::UpdateVelocity");
+  GZ_PROFILE("MecanumDrive::UpdateVelocity");
 
   double linVel;
   double latVel;
@@ -559,11 +719,15 @@ void MecanumDrivePrivate::OnCmdVel(const msgs::Twist &_msg)
   this->targetVel = _msg;
 }
 
-IGNITION_ADD_PLUGIN(MecanumDrive,
-                    ignition::gazebo::System,
+GZ_ADD_PLUGIN(MecanumDrive,
+                    gz::sim::System,
                     MecanumDrive::ISystemConfigure,
                     MecanumDrive::ISystemPreUpdate,
                     MecanumDrive::ISystemPostUpdate)
 
-IGNITION_ADD_PLUGIN_ALIAS(MecanumDrive,
+GZ_ADD_PLUGIN_ALIAS(MecanumDrive,
+                          "gz::sim::systems::MecanumDrive")
+
+// TODO(CH3): Deprecated, remove on version 8
+GZ_ADD_PLUGIN_ALIAS(MecanumDrive,
                           "ignition::gazebo::systems::MecanumDrive")

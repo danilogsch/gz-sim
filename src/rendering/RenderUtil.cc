@@ -35,73 +35,75 @@
 #include <sdf/SDFImpl.hh>
 #include <sdf/Visual.hh>
 
-#include <ignition/common/Profiler.hh>
-#include <ignition/common/Skeleton.hh>
-#include <ignition/common/SkeletonAnimation.hh>
+#include <gz/common/Profiler.hh>
+#include <gz/common/Skeleton.hh>
+#include <gz/common/SkeletonAnimation.hh>
 
-#include <ignition/math/Color.hh>
-#include <ignition/math/Helpers.hh>
-#include <ignition/math/Matrix4.hh>
-#include <ignition/math/Pose3.hh>
+#include <gz/math/Color.hh>
+#include <gz/math/Helpers.hh>
+#include <gz/math/Matrix4.hh>
+#include <gz/math/Pose3.hh>
 
-#include <ignition/msgs/Utility.hh>
+#include <gz/msgs/Utility.hh>
 
-#include <ignition/rendering.hh>
-#include <ignition/rendering/RenderEngine.hh>
-#include <ignition/rendering/RenderingIface.hh>
-#include <ignition/rendering/Scene.hh>
+#include <gz/rendering.hh>
+#include <gz/rendering/RenderEngine.hh>
+#include <gz/rendering/RenderingIface.hh>
+#include <gz/rendering/Scene.hh>
 
-#include "ignition/gazebo/components/Actor.hh"
-#include "ignition/gazebo/components/BoundingBoxCamera.hh"
-#include "ignition/gazebo/components/Camera.hh"
-#include "ignition/gazebo/components/CastShadows.hh"
-#include "ignition/gazebo/components/ChildLinkName.hh"
-#include "ignition/gazebo/components/Collision.hh"
-#include "ignition/gazebo/components/DepthCamera.hh"
-#include "ignition/gazebo/components/GpuLidar.hh"
-#include "ignition/gazebo/components/Geometry.hh"
-#include "ignition/gazebo/components/Inertial.hh"
-#include "ignition/gazebo/components/Joint.hh"
-#include "ignition/gazebo/components/JointAxis.hh"
-#include "ignition/gazebo/components/JointType.hh"
-#include "ignition/gazebo/components/LaserRetro.hh"
-#include "ignition/gazebo/components/Light.hh"
-#include "ignition/gazebo/components/LightCmd.hh"
-#include "ignition/gazebo/components/Link.hh"
-#include "ignition/gazebo/components/Material.hh"
-#include "ignition/gazebo/components/Model.hh"
-#include "ignition/gazebo/components/Name.hh"
-#include "ignition/gazebo/components/ParentEntity.hh"
-#include "ignition/gazebo/components/ParentLinkName.hh"
-#include "ignition/gazebo/components/ParticleEmitter.hh"
-#include "ignition/gazebo/components/Pose.hh"
-#include "ignition/gazebo/components/RgbdCamera.hh"
-#include "ignition/gazebo/components/Scene.hh"
-#include "ignition/gazebo/components/SegmentationCamera.hh"
-#include "ignition/gazebo/components/SemanticLabel.hh"
-#include "ignition/gazebo/components/SourceFilePath.hh"
-#include "ignition/gazebo/components/Temperature.hh"
-#include "ignition/gazebo/components/TemperatureRange.hh"
-#include "ignition/gazebo/components/ThermalCamera.hh"
-#include "ignition/gazebo/components/Transparency.hh"
-#include "ignition/gazebo/components/Visibility.hh"
-#include "ignition/gazebo/components/Visual.hh"
-#include "ignition/gazebo/components/VisualCmd.hh"
-#include "ignition/gazebo/components/World.hh"
-#include "ignition/gazebo/EntityComponentManager.hh"
+#include "gz/sim/components/Actor.hh"
+#include "gz/sim/components/BoundingBoxCamera.hh"
+#include "gz/sim/components/Camera.hh"
+#include "gz/sim/components/CastShadows.hh"
+#include "gz/sim/components/ChildLinkName.hh"
+#include "gz/sim/components/Collision.hh"
+#include "gz/sim/components/DepthCamera.hh"
+#include "gz/sim/components/GpuLidar.hh"
+#include "gz/sim/components/Geometry.hh"
+#include "gz/sim/components/Inertial.hh"
+#include "gz/sim/components/Joint.hh"
+#include "gz/sim/components/JointAxis.hh"
+#include "gz/sim/components/JointType.hh"
+#include "gz/sim/components/LaserRetro.hh"
+#include "gz/sim/components/Light.hh"
+#include "gz/sim/components/LightCmd.hh"
+#include "gz/sim/components/Link.hh"
+#include "gz/sim/components/Material.hh"
+#include "gz/sim/components/Model.hh"
+#include "gz/sim/components/Name.hh"
+#include "gz/sim/components/ParentEntity.hh"
+#include "gz/sim/components/ParentLinkName.hh"
+#include "gz/sim/components/ParticleEmitter.hh"
+#include "gz/sim/components/Pose.hh"
+#include "gz/sim/components/RgbdCamera.hh"
+#include "gz/sim/components/Scene.hh"
+#include "gz/sim/components/SegmentationCamera.hh"
+#include "gz/sim/components/SemanticLabel.hh"
+#include "gz/sim/components/SourceFilePath.hh"
+#include "gz/sim/components/SphericalCoordinates.hh"
+#include "gz/sim/components/Temperature.hh"
+#include "gz/sim/components/TemperatureRange.hh"
+#include "gz/sim/components/ThermalCamera.hh"
+#include "gz/sim/components/Transparency.hh"
+#include "gz/sim/components/Visibility.hh"
+#include "gz/sim/components/Visual.hh"
+#include "gz/sim/components/VisualCmd.hh"
+#include "gz/sim/components/WideAngleCamera.hh"
+#include "gz/sim/components/World.hh"
+#include "gz/sim/EntityComponentManager.hh"
 
-#include "ignition/gazebo/rendering/Events.hh"
-#include "ignition/gazebo/rendering/RenderUtil.hh"
-#include "ignition/gazebo/rendering/SceneManager.hh"
-#include "ignition/gazebo/rendering/MarkerManager.hh"
+#include "gz/sim/rendering/Events.hh"
+#include "gz/sim/rendering/RenderUtil.hh"
+#include "gz/sim/rendering/SceneManager.hh"
+#include "gz/sim/rendering/MarkerManager.hh"
 
-#include "ignition/gazebo/Util.hh"
+#include "gz/sim/Util.hh"
 
-using namespace ignition;
-using namespace gazebo;
+using namespace gz;
+using namespace sim;
 
 // Private data class.
-class ignition::gazebo::RenderUtilPrivate
+class gz::sim::RenderUtilPrivate
 {
   /// True if the rendering component is initialized
   public: bool initialized = false;
@@ -228,7 +230,7 @@ class ignition::gazebo::RenderUtilPrivate
   public: MarkerManager markerManager;
 
   /// \brief Pointer to rendering engine.
-  public: ignition::rendering::RenderEngine *engine{nullptr};
+  public: gz::rendering::RenderEngine *engine{nullptr};
 
   /// \brief rendering scene to be managed by the scene manager and used to
   /// generate sensor data
@@ -345,7 +347,7 @@ class ignition::gazebo::RenderUtilPrivate
   public: std::unordered_map<Entity, int> entityLabel;
 
   /// \brief A map of entity ids and wire boxes
-  public: std::unordered_map<Entity, ignition::rendering::WireBoxPtr> wireBoxes;
+  public: std::unordered_map<Entity, gz::rendering::WireBoxPtr> wireBoxes;
 
   /// \brief A map of entity ids and trajectory pose updates.
   public: std::unordered_map<Entity, math::Pose3d> trajectoryPoses;
@@ -371,7 +373,7 @@ class ignition::gazebo::RenderUtilPrivate
   /// \brief Callback function for creating sensors.
   /// The function args are: entity id, sensor sdf, and parent name.
   /// The function returns the id of the rendering sensor created.
-  public: std::function<std::string(const gazebo::Entity &, const sdf::Sensor &,
+  public: std::function<std::string(const sim::Entity &, const sdf::Sensor &,
           const std::string &)> createSensorCb;
 
   /// \brief Light equality comparison function.
@@ -407,7 +409,7 @@ class ignition::gazebo::RenderUtilPrivate
 
   /// \brief Callback function for removing sensors.
   /// The function arg is the entity id
-  public: std::function<void(const gazebo::Entity &)> removeSensorCb;
+  public: std::function<void(const sim::Entity &)> removeSensorCb;
 
   /// \brief Currently selected entities, organized by order of selection.
   public: std::vector<Entity> selectedEntities;
@@ -765,7 +767,7 @@ void RenderUtil::UpdateECM(const UpdateInfo &/*_info*/,
 void RenderUtil::UpdateFromECM(const UpdateInfo &_info,
                                const EntityComponentManager &_ecm)
 {
-  IGN_PROFILE("RenderUtil::UpdateFromECM");
+  GZ_PROFILE("RenderUtil::UpdateFromECM");
   std::lock_guard<std::mutex> lock(this->dataPtr->updateMutex);
   this->dataPtr->simTime = _info.simTime;
 
@@ -777,6 +779,18 @@ void RenderUtil::UpdateFromECM(const UpdateInfo &_info,
   this->dataPtr->FindInertialLinks(_ecm);
   this->dataPtr->FindJointModels(_ecm);
   this->dataPtr->FindCollisionLinks(_ecm);
+
+  // Get the SphericalCoordinate object from the world
+  // and supply it to the SceneManager
+  auto worldEntity = _ecm.EntityByComponents(components::World());
+  auto sphericalCoordinatesComponent =
+    _ecm.Component<components::SphericalCoordinates>(
+        worldEntity);
+  if (sphericalCoordinatesComponent)
+  {
+    this->dataPtr->sceneManager.SetSphericalCoordinates(
+        sphericalCoordinatesComponent->Data());
+  }
 }
 
 //////////////////////////////////////////////////
@@ -830,11 +844,11 @@ void RenderUtilPrivate::FindInertialLinks(const EntityComponentManager &_ecm)
         _ecm.EntityMatches(entity,
                 std::set<ComponentTypeId>{components::Link::typeId}))
     {
-      links = std::move(this->FindChildLinksFromECM(_ecm, entity));
+      links = this->FindChildLinksFromECM(_ecm, entity);
     }
     else
     {
-      ignerr << "Entity [" << entity
+      gzerr << "Entity [" << entity
              << "] for viewing inertia must be a model or link"
              << std::endl;
       continue;
@@ -854,11 +868,11 @@ void RenderUtilPrivate::FindInertialLinks(const EntityComponentManager &_ecm)
         _ecm.EntityMatches(entity,
                 std::set<ComponentTypeId>{components::Link::typeId}))
     {
-      links = std::move(this->FindChildLinksFromECM(_ecm, entity));
+      links = this->FindChildLinksFromECM(_ecm, entity);
     }
     else
     {
-      ignerr << "Entity [" << entity
+      gzerr << "Entity [" << entity
              << "] for viewing center of mass must be a model or link"
              << std::endl;
       continue;
@@ -906,7 +920,7 @@ void RenderUtilPrivate::FindJointModels(const EntityComponentManager &_ecm)
     }
     else
     {
-      ignerr << "Entity [" << entity
+      gzerr << "Entity [" << entity
              << "] for viewing joints must be a model"
              << std::endl;
       continue;
@@ -932,11 +946,11 @@ void RenderUtilPrivate::PopulateViewModeVisualLinks(
         _ecm.EntityMatches(entity,
                 std::set<ComponentTypeId>{components::Link::typeId}))
     {
-      links = std::move(this->FindChildLinksFromECM(_ecm, entity));
+      links = this->FindChildLinksFromECM(_ecm, entity);
     }
     else
     {
-      ignerr << "Entity [" << entity
+      gzerr << "Entity [" << entity
              << "] for viewing wireframe must be a model or link"
              << std::endl;
       continue;
@@ -957,11 +971,11 @@ void RenderUtilPrivate::PopulateViewModeVisualLinks(
         _ecm.EntityMatches(entity,
                 std::set<ComponentTypeId>{components::Link::typeId}))
     {
-      links = std::move(this->FindChildLinksFromECM(_ecm, entity));
+      links = this->FindChildLinksFromECM(_ecm, entity);
     }
     else
     {
-      ignerr << "Entity [" << entity
+      gzerr << "Entity [" << entity
              << "] for viewing as transparent must be a model or link"
              << std::endl;
       continue;
@@ -989,11 +1003,11 @@ void RenderUtilPrivate::FindCollisionLinks(const EntityComponentManager &_ecm)
         _ecm.EntityMatches(entity,
                 std::set<ComponentTypeId>{components::Link::typeId}))
     {
-      links = std::move(this->FindChildLinksFromECM(_ecm, entity));
+      links = this->FindChildLinksFromECM(_ecm, entity);
     }
     else
     {
-      ignerr << "Entity [" << entity
+      gzerr << "Entity [" << entity
              << "] for viewing collision must be a model or link"
              << std::endl;
       continue;
@@ -1024,7 +1038,7 @@ int RenderUtil::PendingSensors() const
 //////////////////////////////////////////////////
 void RenderUtil::Update()
 {
-  IGN_PROFILE("RenderUtil::Update");
+  GZ_PROFILE("RenderUtil::Update");
   if (!this->dataPtr->initialized)
     return;
 
@@ -1127,7 +1141,7 @@ void RenderUtil::Update()
 
   // remove existing entities
   {
-    IGN_PROFILE("RenderUtil::Update Remove");
+    GZ_PROFILE("RenderUtil::Update Remove");
     for (auto &entity : removeEntities)
     {
       auto node = this->dataPtr->sceneManager.NodeById(entity.first);
@@ -1144,7 +1158,7 @@ void RenderUtil::Update()
 
   // create new entities
   {
-    IGN_PROFILE("RenderUtil::Update Create");
+    GZ_PROFILE("RenderUtil::Update Create");
     for (const auto &model : newModels)
     {
       uint64_t iteration = std::get<3>(model);
@@ -1233,11 +1247,11 @@ void RenderUtil::Update()
 
         // two sensors with the same name cause conflicts. We'll need to use
         // scoped names
-        // TODO(anyone) do this in ign-sensors?
+        // TODO(anyone) do this in gz-sensors?
         auto parentNode = this->dataPtr->sceneManager.NodeById(parent);
         if (!parentNode)
         {
-          ignerr << "Failed to create sensor with name[" << dataSdf.Name()
+          gzerr << "Failed to create sensor with name[" << dataSdf.Name()
                  << "] for entity [" << entity
                  << "]. Parent not found with ID[" << parent << "]."
                  << std::endl;
@@ -1249,7 +1263,7 @@ void RenderUtil::Update()
         // Add to the system's scene manager
         if (!this->dataPtr->sceneManager.AddSensor(entity, sensorName, parent))
         {
-          ignerr << "Failed to create sensor [" << sensorName << "]"
+          gzerr << "Failed to create sensor [" << sensorName << "]"
                  << std::endl;
         }
       }
@@ -1260,7 +1274,7 @@ void RenderUtil::Update()
 
   // update entities' pose
   {
-    IGN_PROFILE("RenderUtil::Update Poses");
+    GZ_PROFILE("RenderUtil::Update Poses");
     for (const auto &pose : entityPoses)
     {
       auto node = this->dataPtr->sceneManager.NodeById(pose.first);
@@ -1279,7 +1293,7 @@ void RenderUtil::Update()
         // this functionality is needed for temporal placement of a
         // visual such as an align preview
         updateNode = std::get<int>(vis->UserData("pause-update"));
-        entityId = std::get<int>(vis->UserData("gazebo-entity"));
+        entityId = std::get<uint64_t>(vis->UserData("gazebo-entity"));
       }
       if ((this->dataPtr->transformActive &&
           (pose.first == this->dataPtr->selectedEntities.back() ||
@@ -1301,7 +1315,7 @@ void RenderUtil::Update()
         auto actorVisual = this->dataPtr->sceneManager.NodeById(tf.first);
         if (!actorMesh || !actorVisual)
         {
-          ignerr << "Actor with Entity ID '" << tf.first << "'. not found. "
+          gzerr << "Actor with Entity ID '" << tf.first << "'. not found. "
                  << "Skipping skeleton animation update." << std::endl;
           continue;
         }
@@ -1426,12 +1440,12 @@ void RenderUtil::Update()
         if (!this->dataPtr->sceneManager.HasEntity(jointEntity))
         {
           std::string childLinkName =
-              this->dataPtr->entityJoints[jointEntity].ChildLinkName();
+              this->dataPtr->entityJoints[jointEntity].ChildName();
           Entity childId =
               this->dataPtr->matchLinksWithEntities[model][childLinkName];
 
           std::string parentLinkName =
-              this->dataPtr->entityJoints[jointEntity].ParentLinkName();
+              this->dataPtr->entityJoints[jointEntity].ParentName();
           Entity parentId =
               this->dataPtr->matchLinksWithEntities[model][parentLinkName];
 
@@ -1536,7 +1550,7 @@ void RenderUtil::Update()
   // TODO(anyone) currently updates material colors of visual only,
   // need to extend to other updates
   {
-    IGN_PROFILE("RenderUtil::Update Visuals");
+    GZ_PROFILE("RenderUtil::Update Visuals");
     for (const auto &visual : entityVisuals)
     {
       if (!visual.second.has_material())
@@ -1600,7 +1614,7 @@ void RenderUtil::Update()
 void RenderUtilPrivate::CreateRenderingEntities(
     const EntityComponentManager &_ecm, const UpdateInfo &_info)
 {
-  IGN_PROFILE("RenderUtilPrivate::CreateRenderingEntities");
+  GZ_PROFILE("RenderUtilPrivate::CreateRenderingEntities");
 
   // Treat all pre-existent entities as new at startup
   // TODO(anyone) Combine the two CreateEntities functions below to reduce
@@ -1646,6 +1660,7 @@ void RenderUtilPrivate::CreateEntitiesFirstUpdate(
   const std::string gpuLidarSuffix{"/scan"};
   const std::string segmentationCameraSuffix{"/segmentation"};
   const std::string boundingBoxCameraSuffix{"/boundingbox"};
+  const std::string wideAngleCameraSuffix{"/image"};
 
   // Get all the new worlds
   // TODO(anyone) Only one scene is supported for now
@@ -1660,7 +1675,6 @@ void RenderUtilPrivate::CreateEntitiesFirstUpdate(
         this->newScenes.push_back(sceneSdf);
         return true;
       });
-
 
   _ecm.Each<components::Model, components::Name, components::Pose,
             components::ParentEntity>(
@@ -1789,8 +1803,8 @@ void RenderUtilPrivate::CreateEntitiesFirstUpdate(
         joint.SetType(_jointType->Data());
         joint.SetRawPose(_pose->Data());
 
-        joint.SetParentLinkName(_parentLinkName->Data());
-        joint.SetChildLinkName(_childLinkName->Data());
+        joint.SetParentName(_parentLinkName->Data());
+        joint.SetChildName(_childLinkName->Data());
 
         auto jointAxis = _ecm.Component<components::JointAxis>(_entity);
         auto jointAxis2 = _ecm.Component<components::JointAxis2>(_entity);
@@ -1898,6 +1912,17 @@ void RenderUtilPrivate::CreateEntitiesFirstUpdate(
             _parent->Data(), boundingBoxCameraSuffix);
           return true;
         });
+
+    // Create wide angle cameras
+    _ecm.Each<components::WideAngleCamera, components::ParentEntity>(
+      [&](const Entity &_entity,
+          const components::WideAngleCamera *_wideAngleCamera,
+          const components::ParentEntity *_parent)->bool
+        {
+          this->AddNewSensor(_ecm, _entity, _wideAngleCamera->Data(),
+            _parent->Data(), wideAngleCameraSuffix);
+          return true;
+        });
   }
 }
 
@@ -1912,6 +1937,7 @@ void RenderUtilPrivate::CreateEntitiesRuntime(
   const std::string gpuLidarSuffix{"/scan"};
   const std::string segmentationCameraSuffix{"/segmentation"};
   const std::string boundingBoxCameraSuffix{"/boundingbox"};
+  const std::string wideAngleCameraSuffix{"/image"};
 
   // Get all the new worlds
   // TODO(anyone) Only one scene is supported for now
@@ -2055,8 +2081,8 @@ void RenderUtilPrivate::CreateEntitiesRuntime(
         joint.SetType(_jointType->Data());
         joint.SetRawPose(_pose->Data());
 
-        joint.SetParentLinkName(_parentLinkName->Data());
-        joint.SetChildLinkName(_childLinkName->Data());
+        joint.SetParentName(_parentLinkName->Data());
+        joint.SetChildName(_childLinkName->Data());
 
         auto jointAxis = _ecm.Component<components::JointAxis>(_entity);
         auto jointAxis2 = _ecm.Component<components::JointAxis2>(_entity);
@@ -2164,6 +2190,17 @@ void RenderUtilPrivate::CreateEntitiesRuntime(
             _parent->Data(), boundingBoxCameraSuffix);
           return true;
         });
+
+    // Create wide angle cameras
+    _ecm.EachNew<components::WideAngleCamera, components::ParentEntity>(
+      [&](const Entity &_entity,
+          const components::WideAngleCamera *_wideAngleCamera,
+          const components::ParentEntity *_parent)->bool
+        {
+          this->AddNewSensor(_ecm, _entity, _wideAngleCamera->Data(),
+            _parent->Data(), wideAngleCameraSuffix);
+          return true;
+        });
   }
 }
 
@@ -2171,7 +2208,7 @@ void RenderUtilPrivate::CreateEntitiesRuntime(
 void RenderUtilPrivate::UpdateRenderingEntities(
     const EntityComponentManager &_ecm)
 {
-  IGN_PROFILE("RenderUtilPrivate::UpdateRenderingEntities");
+  GZ_PROFILE("RenderUtilPrivate::UpdateRenderingEntities");
   _ecm.Each<components::Model, components::Pose>(
       [&](const Entity &_entity,
         const components::Model *,
@@ -2212,7 +2249,7 @@ void RenderUtilPrivate::UpdateRenderingEntities(
         auto animTimeComp = _ecm.Component<components::AnimationTime>(_entity);
         auto animNameComp = _ecm.Component<components::AnimationName>(_entity);
 
-        // Animation time set through ECM so ign-rendering can calculate bone
+        // Animation time set through ECM so gz-rendering can calculate bone
         // transforms
         if (animTimeComp && animNameComp)
         {
@@ -2229,14 +2266,14 @@ void RenderUtilPrivate::UpdateRenderingEntities(
             this->actorAnimationData[_entity] = animData;
           }
         }
-        // Bone poses calculated by ign-common
+        // Bone poses calculated by gz-common
         else if (this->actorManualSkeletonUpdate)
         {
           this->actorTransforms[_entity] =
               this->sceneManager.ActorSkeletonTransformsAt(
               _entity, this->simTime);
         }
-        // Trajectory info from SDF so ign-rendering can calculate bone poses
+        // Trajectory info from SDF so gz-rendering can calculate bone poses
         else
         {
           auto animData =
@@ -2334,13 +2371,23 @@ void RenderUtilPrivate::UpdateRenderingEntities(
         this->entityPoses[_entity] = _pose->Data();
         return true;
       });
+
+  // Update wide angle cameras
+  _ecm.Each<components::WideAngleCamera, components::Pose>(
+      [&](const Entity &_entity,
+        const components::WideAngleCamera *,
+        const components::Pose *_pose)->bool
+      {
+        this->entityPoses[_entity] = _pose->Data();
+        return true;
+      });
 }
 
 //////////////////////////////////////////////////
 void RenderUtilPrivate::RemoveRenderingEntities(
     const EntityComponentManager &_ecm, const UpdateInfo &_info)
 {
-  IGN_PROFILE("RenderUtilPrivate::RemoveRenderingEntities");
+  GZ_PROFILE("RenderUtilPrivate::RemoveRenderingEntities");
   _ecm.EachRemoved<components::Model>(
       [&](const Entity &_entity, const components::Model *)->bool
       {
@@ -2473,6 +2520,14 @@ void RenderUtilPrivate::RemoveRenderingEntities(
         return true;
       });
 
+  // wide angle cameras
+  _ecm.EachRemoved<components::WideAngleCamera>(
+    [&](const Entity &_entity, const components::WideAngleCamera *)->bool
+      {
+        this->removeEntities[_entity] = _info.iterations;
+        return true;
+      });
+
   // collisions
   _ecm.EachRemoved<components::Collision>(
     [&](const Entity &_entity, const components::Collision *)->bool
@@ -2503,20 +2558,49 @@ void RenderUtil::Init()
   if (nullptr != this->dataPtr->scene)
     return;
 
-  ignition::common::SystemPaths pluginPath;
-  pluginPath.SetPluginPathEnv(kRenderPluginPathEnv);
+  gz::common::SystemPaths pluginPath;
+
+  // TODO(CH3): Deprecated. Remove on tock.
+  std::string result;
+  if (!gz::common::env(kRenderPluginPathEnv, result))
+  {
+    // Try deprecated env var if proper env var not populated
+    if (gz::common::env(kRenderPluginPathEnvDeprecated, result))
+    {
+      gzwarn << "Finding plugins using deprecated IGN_ prefixed environment "
+             << "variable [" << kRenderPluginPathEnvDeprecated
+             << "]. Please use [" << kRenderPluginPathEnv
+             << "] instead." << std::endl;
+      pluginPath.SetPluginPathEnv(kRenderPluginPathEnv);
+    }
+  }
+  else
+  {
+    // Preserve this one.
+    pluginPath.SetPluginPathEnv(kRenderPluginPathEnv);
+  }
+
   rendering::setPluginPaths(pluginPath.PluginPaths());
 
   std::map<std::string, std::string> params;
+#ifdef __APPLE__
+  // TODO(srmainwaring): implement facility for overriding the default
+  //    graphics API in macOS, in which case there are restrictions on
+  //    the version of OpenGL used.
+  params["metal"] = "1";
+#else
   if (this->dataPtr->useCurrentGLContext)
     params["useCurrentGLContext"] = "1";
+#endif
+
   if (this->dataPtr->isHeadlessRendering)
     params["headless"] = "1";
   params["winID"] = this->dataPtr->winID;
+
   this->dataPtr->engine = rendering::engine(this->dataPtr->engineName, params);
   if (!this->dataPtr->engine)
   {
-    ignerr << "Engine [" << this->dataPtr->engineName << "] is not supported. "
+    gzerr << "Engine [" << this->dataPtr->engineName << "] is not supported. "
            << "Loading OGRE2 instead." << std::endl;
     this->dataPtr->engine = rendering::engine("ogre2", params);
   }
@@ -2526,7 +2610,7 @@ void RenderUtil::Init()
       this->dataPtr->engine->SceneByName(this->dataPtr->sceneName);
   if (!this->dataPtr->scene)
   {
-    igndbg << "Create scene [" << this->dataPtr->sceneName << "]" << std::endl;
+    gzdbg << "Create scene [" << this->dataPtr->sceneName << "]" << std::endl;
     this->dataPtr->scene =
         this->dataPtr->engine->CreateScene(this->dataPtr->sceneName);
     if (this->dataPtr->scene)
@@ -2544,14 +2628,6 @@ void RenderUtil::Init()
       }
       this->dataPtr->scene->SetSkyEnabled(this->dataPtr->skyEnabled);
     }
-  }
-
-  {
-    // HACK: Tell ign-rendering6 to listen to SetTime calls
-    // TODO(anyone) Remove this when linked against ign-rendering7
-    this->dataPtr->scene->SetTime(std::chrono::nanoseconds(-1));
-    IGN_ASSERT(this->dataPtr->scene->Time() != std::chrono::nanoseconds(-1),
-               "Please remove this snippet after merging with ign-rendering7");
   }
 
   this->dataPtr->sceneManager.SetScene(this->dataPtr->scene);
@@ -2591,7 +2667,7 @@ void RenderUtil::ShowGrid()
   rendering::GridPtr gridGeom = this->dataPtr->scene->CreateGrid();
   if (!gridGeom)
   {
-    ignwarn << "Failed to create grid for scene ["
+    gzwarn << "Failed to create grid for scene ["
       << this->dataPtr->scene->Name() << "] on engine ["
         << this->dataPtr->scene->Engine()->Name() << "]"
           << std::endl;
@@ -2609,7 +2685,17 @@ void RenderUtil::ShowGrid()
 /////////////////////////////////////////////////
 void RenderUtil::SetEngineName(const std::string &_name)
 {
-  this->dataPtr->engineName = _name;
+  // Deprecated: accept ignition-prefixed engines
+  std::string deprecatedPrefix{"ignition"};
+  auto name = _name;
+  auto pos = name.find(deprecatedPrefix);
+  if (pos != std::string::npos)
+  {
+    name.replace(pos, deprecatedPrefix.size(), "gz");
+    gzwarn << "Trying to load deprecated engine [" << _name
+           << "] for the server. Use [" << name << "] instead." << std::endl;
+  }
+  this->dataPtr->engineName = name;
 }
 
 /////////////////////////////////////////////////
@@ -2628,13 +2714,6 @@ void RenderUtil::SetSceneName(const std::string &_name)
 void RenderUtil::SetScene(const rendering::ScenePtr &_scene)
 {
   this->dataPtr->scene = _scene;
-  {
-    // HACK: Tell ign-rendering6 to listen to SetTime calls
-    // TODO(anyone) Remove this when linked against ign-rendering7
-    this->dataPtr->scene->SetTime(std::chrono::nanoseconds(-1));
-    IGN_ASSERT(this->dataPtr->scene->Time() != std::chrono::nanoseconds(-1),
-               "Please remove this snippet after merging with ign-rendering7");
-  }
   this->dataPtr->sceneManager.SetScene(_scene);
   this->dataPtr->engine = _scene == nullptr ? nullptr : _scene->Engine();
 }
@@ -2665,7 +2744,7 @@ void RenderUtil::SetWinID(const std::string &_winID)
 
 /////////////////////////////////////////////////
 void RenderUtil::SetEnableSensors(bool _enable,
-    std::function<std::string(const gazebo::Entity &, const sdf::Sensor &,
+    std::function<std::string(const sim::Entity &, const sdf::Sensor &,
       const std::string &)> _createSensorCb)
 {
   this->dataPtr->enableSensors = _enable;
@@ -2674,7 +2753,7 @@ void RenderUtil::SetEnableSensors(bool _enable,
 
 /////////////////////////////////////////////////
 void RenderUtil::SetRemoveSensorCb(
-    std::function<void(const gazebo::Entity &)> _removeSensorCb)
+    std::function<void(const sim::Entity &)> _removeSensorCb)
 {
   this->dataPtr->removeSensorCb = std::move(_removeSensorCb);
 }
@@ -2708,7 +2787,7 @@ void RenderUtil::SetSelectedEntity(const rendering::NodePtr &_node)
   Entity entityId = kNullEntity;
 
   if (vis)
-    entityId = std::get<int>(vis->UserData("gazebo-entity"));
+    entityId = std::get<uint64_t>(vis->UserData("gazebo-entity"));
 
   if (entityId == kNullEntity)
     return;
@@ -2768,7 +2847,7 @@ void RenderUtilPrivate::HighlightNode(const rendering::NodePtr &_node)
   auto vis = std::dynamic_pointer_cast<rendering::Visual>(_node);
   Entity entityId = kNullEntity;
   if (vis)
-    entityId = std::get<int>(vis->UserData("gazebo-entity"));
+    entityId = std::get<uint64_t>(vis->UserData("gazebo-entity"));
   // If the entity is not found in the existing map, create a wire box
   auto wireBoxIt = this->wireBoxes.find(entityId);
   if (wireBoxIt == this->wireBoxes.end())
@@ -2795,7 +2874,7 @@ void RenderUtilPrivate::HighlightNode(const rendering::NodePtr &_node)
     wireBox->SetBox(aabb);
 
     // Create visual and add wire box
-    ignition::rendering::VisualPtr wireBoxVis =
+    gz::rendering::VisualPtr wireBoxVis =
       this->scene->CreateVisual();
     wireBoxVis->SetInheritScale(false);
     wireBoxVis->AddGeometry(wireBox);
@@ -2805,12 +2884,12 @@ void RenderUtilPrivate::HighlightNode(const rendering::NodePtr &_node)
 
     // Add wire box to map for setting visibility
     this->wireBoxes.insert(
-        std::pair<Entity, ignition::rendering::WireBoxPtr>(entityId, wireBox));
+        std::pair<Entity, gz::rendering::WireBoxPtr>(entityId, wireBox));
   }
   else
   {
-    ignition::rendering::WireBoxPtr wireBox = wireBoxIt->second;
-    ignition::math::AxisAlignedBox aabb = vis->LocalBoundingBox();
+    gz::rendering::WireBoxPtr wireBox = wireBoxIt->second;
+    gz::math::AxisAlignedBox aabb = vis->LocalBoundingBox();
     wireBox->SetBox(aabb);
     auto visParent = wireBox->Parent();
     if (visParent)
@@ -2826,10 +2905,10 @@ void RenderUtilPrivate::LowlightNode(const rendering::NodePtr &_node)
   auto vis = std::dynamic_pointer_cast<rendering::Visual>(_node);
   Entity entityId = kNullEntity;
   if (vis)
-    entityId = std::get<int>(vis->UserData("gazebo-entity"));
+    entityId = std::get<uint64_t>(vis->UserData("gazebo-entity"));
   if (this->wireBoxes.find(entityId) != this->wireBoxes.end())
   {
-    ignition::rendering::WireBoxPtr wireBox =
+    gz::rendering::WireBoxPtr wireBox =
       this->wireBoxes[entityId];
     auto visParent = wireBox->Parent();
     if (visParent)
@@ -2864,7 +2943,7 @@ void RenderUtilPrivate::RemoveBoundingBox(const Entity _entity)
 void RenderUtilPrivate::UpdateLights(
     const std::unordered_map<Entity, msgs::Light> &_entityLights)
 {
-  IGN_PROFILE("RenderUtil::Update Lights");
+  GZ_PROFILE("RenderUtil::Update Lights");
   for (const auto &light : _entityLights)
   {
     auto node = this->sceneManager.NodeById(light.first);
@@ -2873,49 +2952,15 @@ void RenderUtilPrivate::UpdateLights(
     auto l = std::dynamic_pointer_cast<rendering::Light>(node);
     if (l)
     {
-      // todo(ahcorde) Use the field visualize_visual in light.proto from
-      // Garden on.
-      bool visualizeVisual = true;
-      for (int i = 0; i < light.second.header().data_size(); ++i)
-      {
-        for (int j = 0;
-            j < light.second.header().data(i).value_size(); ++j)
-        {
-          if (light.second.header().data(i).key() ==
-              "visualizeVisual")
-          {
-            visualizeVisual = ignition::math::parseInt(
-              light.second.header().data(i).value(0));
-          }
-        }
-      }
-
       rendering::VisualPtr lightVisual =
           this->sceneManager.VisualById(
             this->matchLightWithVisuals[light.first]);
       if (lightVisual)
-        lightVisual->SetVisible(visualizeVisual);
+        lightVisual->SetVisible(light.second.visualize_visual());
 
-      // todo(ahcorde) Use the field is_light_off in light.proto from
-      // Garden on.
-      bool isLightOn = true;
-      for (int i = 0; i < light.second.header().data_size(); ++i)
+      if (!light.second.is_light_off())
       {
-        for (int j = 0;
-            j < light.second.header().data(i).value_size(); ++j)
-        {
-          if (light.second.header().data(i).key() ==
-              "isLightOn")
-          {
-            isLightOn = ignition::math::parseInt(
-              light.second.header().data(i).value(0));
-          }
-        }
-      }
-
-      if (isLightOn)
-      {
-        if (!ignition::math::equal(
+        if (!gz::math::equal(
             l->Intensity(),
             static_cast<double>(light.second.intensity())))
         {
@@ -2938,25 +2983,25 @@ void RenderUtilPrivate::UpdateLights(
           l->SetSpecularColor(msgs::Convert(light.second.specular()));
         }
       }
-      if (!ignition::math::equal(
+      if (!gz::math::equal(
           l->AttenuationRange(),
           static_cast<double>(light.second.range())))
       {
         l->SetAttenuationRange(light.second.range());
       }
-      if (!ignition::math::equal(
+      if (!gz::math::equal(
           l->AttenuationLinear(),
           static_cast<double>(light.second.attenuation_linear())))
       {
         l->SetAttenuationLinear(light.second.attenuation_linear());
       }
-      if (!ignition::math::equal(
+      if (!gz::math::equal(
           l->AttenuationConstant(),
           static_cast<double>(light.second.attenuation_constant())))
       {
         l->SetAttenuationConstant(light.second.attenuation_constant());
       }
-      if (!ignition::math::equal(
+      if (!gz::math::equal(
           l->AttenuationQuadratic(),
           static_cast<double>(light.second.attenuation_quadratic())))
       {
@@ -2995,7 +3040,7 @@ void RenderUtilPrivate::UpdateLights(
           lSpotLight->SetInnerAngle(light.second.spot_inner_angle());
         if (lSpotLight->OuterAngle() != light.second.spot_outer_angle())
           lSpotLight->SetOuterAngle(light.second.spot_outer_angle());
-        if (!ignition::math::equal(
+        if (!gz::math::equal(
             lSpotLight->Falloff(),
             static_cast<double>(light.second.spot_falloff())))
         {
@@ -3026,7 +3071,7 @@ void RenderUtilPrivate::UpdateThermalCamera(const std::unordered_map<Entity,
       }
       else
       {
-        ignwarn << "Unable to set thermal camera temperature linear resolution."
+        gzwarn << "Unable to set thermal camera temperature linear resolution."
                 << " Value must be greater than 0. Using the default value: "
                 << camera->LinearResolution() << ". " << std::endl;
       }
@@ -3039,7 +3084,7 @@ void RenderUtilPrivate::UpdateThermalCamera(const std::unordered_map<Entity,
       }
       else
       {
-        ignwarn << "Unable to set thermal camera temperature range."
+        gzwarn << "Unable to set thermal camera temperature range."
                 << "Max temperature must be greater or equal to min. "
                 << "Using the default values : [" << camera->MinTemperature()
                 << ", " << camera->MaxTemperature() << "]." << std::endl;
@@ -3062,7 +3107,7 @@ void RenderUtilPrivate::UpdateAnimation(const std::unordered_map<Entity,
         it.first);
     if (!actorMesh || !actorVisual || !actorSkel)
     {
-      ignerr << "Actor with Entity ID '" << it.first << "'. not found. "
+      gzerr << "Actor with Entity ID '" << it.first << "'. not found. "
              << "Skipping skeleton animation update." << std::endl;
       continue;
     }
@@ -3070,7 +3115,7 @@ void RenderUtilPrivate::UpdateAnimation(const std::unordered_map<Entity,
     const AnimationUpdateData &animData = it.second;
     if (!animData.valid)
     {
-      ignerr << "invalid animation update data" << std::endl;
+      gzerr << "invalid animation update data" << std::endl;
       continue;
     }
     // Enable skeleton animation
@@ -3194,7 +3239,7 @@ void RenderUtil::HideWireboxes(const Entity &_entity)
   auto wireBoxIt = this->dataPtr->wireBoxes.find(_entity);
   if (wireBoxIt != this->dataPtr->wireBoxes.end())
   {
-    ignition::rendering::WireBoxPtr wireBox = wireBoxIt->second;
+    gz::rendering::WireBoxPtr wireBox = wireBoxIt->second;
     auto visParent = wireBox->Parent();
     if (visParent)
       visParent->SetVisible(false);
@@ -3204,7 +3249,7 @@ void RenderUtil::HideWireboxes(const Entity &_entity)
 /////////////////////////////////////////////////
 void RenderUtil::ViewInertia(const Entity &_entity)
 {
-  std::vector<Entity> inertiaLinks = std::move(this->FindChildLinks(_entity));
+  std::vector<Entity> inertiaLinks = this->FindChildLinks(_entity);
 
   // check if _entity has an inertial component (_entity is a link)
   if (this->dataPtr->entityInertials.find(_entity) !=
@@ -3244,7 +3289,7 @@ void RenderUtil::ViewInertia(const Entity &_entity)
         this->dataPtr->sceneManager.VisualById(inertiaVisualId);
     if (inertiaVisual == nullptr)
     {
-      ignerr << "Could not find inertia visual for entity [" << inertiaLink
+      gzerr << "Could not find inertia visual for entity [" << inertiaLink
              << "]" << std::endl;
       continue;
     }
@@ -3263,7 +3308,7 @@ void RenderUtil::ViewInertia(const Entity &_entity)
 /////////////////////////////////////////////////
 void RenderUtil::ViewCOM(const Entity &_entity)
 {
-  std::vector<Entity> inertiaLinks = std::move(this->FindChildLinks(_entity));
+  std::vector<Entity> inertiaLinks = this->FindChildLinks(_entity);
 
   // check if _entity has an inertial component (_entity is a link)
   if (this->dataPtr->entityInertials.find(_entity) !=
@@ -3303,7 +3348,7 @@ void RenderUtil::ViewCOM(const Entity &_entity)
         this->dataPtr->sceneManager.VisualById(comVisualId);
     if (comVisual == nullptr)
     {
-      ignerr << "Could not find center of mass visual for entity ["
+      gzerr << "Could not find center of mass visual for entity ["
              << inertiaLink
              << "]" << std::endl;
       continue;
@@ -3389,7 +3434,7 @@ void RenderUtil::ViewJoints(const Entity &_entity)
         this->dataPtr->sceneManager.VisualById(jointEntity);
     if (jointVisual == nullptr)
     {
-      ignerr << "Could not find visual for entity [" << jointEntity
+      gzerr << "Could not find visual for entity [" << jointEntity
              << "]" << std::endl;
       continue;
     }
@@ -3417,7 +3462,7 @@ void RenderUtil::ViewTransparent(const Entity &_entity)
   }
 
   // Find all existing child links for this entity
-  std::vector<Entity> links = std::move(this->FindChildLinks(_entity));
+  std::vector<Entity> links = this->FindChildLinks(_entity);
 
   for (const auto &link : links)
   {
@@ -3459,7 +3504,7 @@ void RenderUtil::ViewTransparent(const Entity &_entity)
         this->dataPtr->sceneManager.VisualById(visEntity);
     if (transparentVisual == nullptr)
     {
-      ignerr << "Could not find visual for entity [" << visEntity
+      gzerr << "Could not find visual for entity [" << visEntity
              << "]" << std::endl;
       continue;
     }
@@ -3489,7 +3534,7 @@ void RenderUtil::ViewWireframes(const Entity &_entity)
   }
 
   // Find all existing child links for this entity
-  std::vector<Entity> links = std::move(this->FindChildLinks(_entity));
+  std::vector<Entity> links = this->FindChildLinks(_entity);
 
   for (const auto &link : links)
   {
@@ -3531,7 +3576,7 @@ void RenderUtil::ViewWireframes(const Entity &_entity)
         this->dataPtr->sceneManager.VisualById(visEntity);
     if (wireframeVisual == nullptr)
     {
-      ignerr << "Could not find visual for entity [" << visEntity
+      gzerr << "Could not find visual for entity [" << visEntity
              << "]" << std::endl;
       continue;
     }
@@ -3559,7 +3604,7 @@ void RenderUtil::ViewCollisions(const Entity &_entity)
   }
 
   // Find all existing child links for this entity
-  std::vector<Entity> links = std::move(this->FindChildLinks(_entity));
+  std::vector<Entity> links = this->FindChildLinks(_entity);
 
   for (const auto &link : links)
   {
@@ -3601,7 +3646,7 @@ void RenderUtil::ViewCollisions(const Entity &_entity)
         this->dataPtr->sceneManager.VisualById(colEntity);
     if (colVisual == nullptr)
     {
-      ignerr << "Could not find collision visual for entity [" << colEntity
+      gzerr << "Could not find collision visual for entity [" << colEntity
              << "]" << std::endl;
       continue;
     }

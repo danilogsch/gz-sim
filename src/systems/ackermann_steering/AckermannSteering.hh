@@ -14,19 +14,19 @@
  * limitations under the License.
  *
  */
-#ifndef IGNITION_GAZEBO_SYSTEMS_ACKERMANNSTEERING_HH_
-#define IGNITION_GAZEBO_SYSTEMS_ACKERMANNSTEERING_HH_
+#ifndef GZ_SIM_SYSTEMS_ACKERMANNSTEERING_HH_
+#define GZ_SIM_SYSTEMS_ACKERMANNSTEERING_HH_
 
 #include <memory>
 
-#include <ignition/gazebo/System.hh>
+#include <gz/sim/System.hh>
 
-namespace ignition
+namespace gz
 {
-namespace gazebo
+namespace sim
 {
 // Inline bracket to help doxygen filtering.
-inline namespace IGNITION_GAZEBO_VERSION_NAMESPACE {
+inline namespace GZ_SIM_VERSION_NAMESPACE {
 namespace systems
 {
   // Forward declaration
@@ -96,14 +96,14 @@ namespace systems
   ///
   /// `<frame_id>`: Custom `frame_id` field that this system will use as the
   /// origin of the odometry transform in both the `<tf_topic>`
-  /// `ignition.msgs.Pose_V` message and the `<odom_topic>`
-  /// `ignition.msgs.Odometry` message. This element if optional, and the
+  /// `gz.msgs.Pose_V` message and the `<odom_topic>`
+  /// `gz.msgs.Odometry` message. This element if optional, and the
   /// default value is `{name_of_model}/odom`.
   ///
   /// `<child_frame_id>`: Custom `child_frame_id` that this system will use as
   /// the target of the odometry transform in both the `<tf_topic>`
-  /// `ignition.msgs.Pose_V` message and the `<odom_topic>`
-  /// `ignition.msgs.Odometry` message. This element if optional,
+  /// `gz.msgs.Pose_V` message and the `<odom_topic>`
+  /// `gz.msgs.Odometry` message. This element if optional,
   /// and the default value is `{name_of_model}/{name_of_link}`.
   ///
   /// A robot with rear drive and front steering would have one each
@@ -111,7 +111,7 @@ namespace systems
   /// right_steering_joint
   ///
   /// References:
-  /// https://github.com/ignitionrobotics/ign-gazebo/tree/main/src/systems/diff_drive
+  /// https://github.com/gazebosim/gz-sim/tree/main/src/systems/diff_drive
   /// https://www.auto.tuwien.ac.at/bib/pdf_TR/TR0183.pdf
   /// https://github.com/froohoo/ackermansteer/blob/master/ackermansteer/
 
@@ -136,8 +136,8 @@ namespace systems
 
     // Documentation inherited
     public: void PreUpdate(
-                const ignition::gazebo::UpdateInfo &_info,
-                ignition::gazebo::EntityComponentManager &_ecm) override;
+                const gz::sim::UpdateInfo &_info,
+                gz::sim::EntityComponentManager &_ecm) override;
 
     // Documentation inherited
     public: void PostUpdate(

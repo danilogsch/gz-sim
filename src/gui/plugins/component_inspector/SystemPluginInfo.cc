@@ -14,17 +14,17 @@
  * limitations under the License.
  *
 */
-#include <ignition/msgs/plugin_v.pb.h>
+#include <gz/msgs/plugin_v.pb.h>
 
-#include <ignition/common/Console.hh>
-#include <ignition/gazebo/components/SystemPluginInfo.hh>
+#include <gz/common/Console.hh>
+#include <gz/sim/components/SystemPluginInfo.hh>
 
 #include "SystemPluginInfo.hh"
 #include "ComponentInspector.hh"
 #include "Types.hh"
 
-using namespace ignition;
-using namespace gazebo;
+using namespace gz;
+using namespace sim;
 using namespace inspector;
 
 /////////////////////////////////////////////////
